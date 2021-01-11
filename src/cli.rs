@@ -54,8 +54,6 @@ fn usage(msg: &str) {
 
 fn open_sheet(path: String, sheet_name: String) -> Result<Range<DataType>, Error> {
     let mut workbook: Xlsx<_> = open_workbook(path)?;
-    let mut failure_msg = "Cannot find ".to_owned();
-    failure_msg.push_str(&sheet_name);
     let range = workbook
         .worksheet_range(&sheet_name)
         .ok_or(Error::Msg("Can't find sheet"))??;
