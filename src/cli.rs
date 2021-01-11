@@ -10,6 +10,21 @@ fn main() {
             if &args[1] == "--help" || &args[1] == "-h" {
                 usage("");
             }
+            let workbook: Option<Xlsx<_>> = match open_workbook(&args[1]) {
+                Ok(wb) => Some(wb),
+                Err(_) => None,
+            };
+
+            if let Some(wb) = workbook {
+                println!("Available sheets:");
+                for sheet in wb.sheet_names() {
+                    println!("* '{}'", sheet);
+                }
+                println!("----");
+            } else {
+                println!("Unable to find sheet names in '{}'", &args[1])
+            }
+
             usage("Missing sheet name.")
         }
         s if s > 3 => usage(&format!("Found more args than expected: {:?}", &args[1..])),
