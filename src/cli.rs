@@ -36,26 +36,27 @@ fn main() {
 
     match open_sheet(filename.to_string(), sheet_name.to_string()) {
         Ok(sheet) => {
-            println!("nice!");
+            let rows = sheet.rows().take(100);
+            for row in rows {
+                let r = row.into_iter();
+                let last_idx = r.len() - 1;
+                for (col_idx, data) in r.enumerate() {
+                    // escape double quotes with double double quotes!
+                    let value = data.to_string().replace("\"", "\"\"");
 
-            let rows = sheet.rows();
-            let headers = match sheet.rows().next() {
-                Some(h) => h,
-                None => panic!("No data in sheet found."),
-            };
+                    if value.len() != 0 {
+                        // wrap in double quotes
+                        print!("\"{}\"", value);
+                    }
 
-            for row in rows.take(5) {
-                println!("\n#####\n");
-
-                let r = row.into_iter().zip(headers.into_iter());
-                for (data, header) in r {
-                    println!("{}: {}", header, data);
+                    if col_idx != last_idx {
+                        print!(",");
+                    }
                 }
-
-                println!("\n#####\n");
+                println!();
             }
         }
-        Err(m) => println!("booo\n{}", m),
+        Err(m) => panic!("booo!\n{}", m),
     }
 }
 
