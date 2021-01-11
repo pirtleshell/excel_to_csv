@@ -1,24 +1,23 @@
 use calamine::{open_workbook, DataType, Error, Range, Reader, Xlsx};
-
-fn open_sheet(path: String, sheet_name: String) -> Result<Range<DataType>, Error> {
-    let mut workbook: Xlsx<_> = open_workbook(path)?;
-    let mut failure_msg = "Cannot find ".to_owned();
-    failure_msg.push_str(&sheet_name);
-    let range = workbook
-        .worksheet_range(&sheet_name)
-        .ok_or(Error::Msg("Can't find sheet"))??;
-    Ok(range)
-}
+use std::env;
 
 fn main() {
-    println!("Hello from the cli!");
+    let args: Vec<String> = env::args().collect();
+    match args.len() {
+        s if s < 2 => usage("Missing filename"),
+        s if s > 2 => usage(&format!("Found more args than expected: {:?}", &args[1..])),
+        _ => (),
+    };
 
-    let path = format!("{}/tests/zipcodes.xlsx", env!("CARGO_MANIFEST_DIR"));
+    let filename = &args[1];
+
+    if filename == "--help" || filename == "-h" {
+        usage("");
+    }
+
     let sheet_name = "ZIP codes 2018";
 
-    println!("{}", path);
-
-    match open_sheet(path, sheet_name.to_string()) {
+    match open_sheet(filename.to_string(), sheet_name.to_string()) {
         Ok(sheet) => {
             println!("nice!");
 
@@ -41,4 +40,22 @@ fn main() {
         }
         Err(m) => println!("booo\n{}", m),
     }
+}
+
+fn usage(msg: &str) {
+    if !msg.is_empty() {
+        println!("{}", msg);
+    }
+    println!("Usage: excel_to_csv ./path/to/spreadsheet.xlsx");
+    std::process::exit(0x0100);
+}
+
+fn open_sheet(path: String, sheet_name: String) -> Result<Range<DataType>, Error> {
+    let mut workbook: Xlsx<_> = open_workbook(path)?;
+    let mut failure_msg = "Cannot find ".to_owned();
+    failure_msg.push_str(&sheet_name);
+    let range = workbook
+        .worksheet_range(&sheet_name)
+        .ok_or(Error::Msg("Can't find sheet"))??;
+    Ok(range)
 }
